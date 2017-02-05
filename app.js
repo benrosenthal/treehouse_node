@@ -6,12 +6,12 @@ var app = express();
 
 //first peice of middleware
 app.use(function(req, res, next){
-  console.log("First piece of middleware");
+  req.myMessage = "Hello, middleware #2";
   next();
 })
 
-app.use("/different/:id",function(req, res, next){
-  console.log("Second piece of middleware, ID:", req.params.id);
+app.use(function(req, res, next){
+  console.log(req.myMessage);
   next();
 })
 
