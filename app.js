@@ -6,12 +6,7 @@ var app = express();
 
 //first peice of middleware
 app.use(function(req, res, next){
-  req.myMessage = "Hello, middleware #2";
-  next();
-})
-
-app.use(function(req, res, next){
-  console.log(req.myMessage);
+  console.log("The leaves on the are", req.query.color);
   next();
 })
 
