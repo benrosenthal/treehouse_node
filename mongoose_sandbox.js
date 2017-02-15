@@ -69,13 +69,18 @@ db.once("open", function(){
             if (err) console.error(err);
               whale.save(function(err){
                 if (err) console.error(err)
+                Animal.find({size: "big"}, function(err, animals) {
+                  animals.forEach(function(animal){
+                    console.log(animal.name + " the " + animal.color +
+                        " " + animal.type);
+                });
                 db.close(function(){
                   console.log("db connection closed");
+                });
               });
             });
           });
         });
-      });
 
     });
 
