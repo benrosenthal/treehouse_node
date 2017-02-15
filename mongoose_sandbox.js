@@ -48,6 +48,17 @@ db.once("open", function(){
     //Can't call save before close method -- save is synchronous-- so close will be called immeadiately after before
     //save method can complete -- close data base from within callback in save method
 
+    //Overriding default when adding/creating db collection
+    var whale = new Animal({
+      type: "whale",
+      size: "big",
+      mass: 190500,
+      name: "Fig"
+      //did not supply color -- whale should use default
+    });
+
+
+
     //Ask animal model to empty animals collection b4 save anything
     Animal.remove({}, function(err){
       //want all save ops to happen after removal, so wrap in removal's callbackl
@@ -56,8 +67,12 @@ db.once("open", function(){
         if (err) console.error(err);
           animal.save(function(err){
             if (err) console.error(err);
-            db.close(function(){
-              console.log("db connection closed");
+              whale.save(function(err){
+                if (err) console.error(err)
+                db.close(function(){
+                  console.log("db connection closed");
+              });
+            });
           });
         });
       });
