@@ -2,6 +2,10 @@
 
 var mongoose = require("mongoose");
 //One this called is can monitor the status of the request through Mongoose's connect onj
+
+//NOT FROM TREEHOUSE -- to solve promise deprecation warning
+mongoose.Promise = global.Promise;
+
 mongoose.connect("mongodb://localhost:27017/sandbox");
 
 var db = mongoose.connection;
@@ -17,11 +21,11 @@ db.once("open", function(){
 
   var Schema = mongoose.Schema;
   var AnimalSchema = new Schema({
-    {type: String, default: "goldfish"},
-    {size: String, default: "small"},
-    {color: String, default: "golden"},
-    {mass: Number, default: 0.007},
-    {name: String, default: "Angela"}
+    type: {type: String, default: "goldfish"},
+    size: {type: String, default: "small"},
+    color: {type: String, default: "golden"},
+    mass: {type: Number, default: 0.007},
+    name: {type: String, default: "Angela"}
     //This will map to a mongo collection called Animals whenever we serve a document
     });
 
@@ -45,19 +49,22 @@ db.once("open", function(){
     //save method can complete -- close data base from within callback in save method
 
     //Ask animal model to empty animals collection b4 save anything
-    Animal.remove({, function(){
-      
-    }});
-
-    elephant.save(function(err){
-      if (err) console.error("Save Failed.", err);
-      animal.save(function(err) {
-        if (err) console.error("Save Failed.", err);
-        db.close(function(){
-          console.log("db connection closed");
+    Animal.remove({}, function(err){
+      //want all save ops to happen after removal, so wrap in removal's callbackl
+      if (err) console.log(err);
+      elephant.save(function(err){
+        if (err) console.error(err);
+          animal.save(function(err){
+            if (err) console.error(err);
+            db.close(function(){
+              console.log("db connection closed");
+          });
         });
       });
+
     });
+
+
 
     //if just call save on animal, will run into problems. save method runs asynchonroulsy, impossible to know which save will winish first
     //if save method called on elephant finishes first db connection will be closed
