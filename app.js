@@ -11,6 +11,26 @@ var logger = require("morgan");
 app.use(logger("dev"));
 app.use(jsonParser());
 
+var mongoose = require("mongoose");
+//Once called can monitor the status of the request through Mongoose's connect obj
+
+//NOT FROM TREEHOUSE -- to solve promise deprecation warning
+mongoose.Promise = global.Promise;
+
+mongoose.connect("mongodb://localhost:27017/sandbox");
+
+var db = mongoose.connection;
+
+db.on("error", function(err){
+  console.error("connection error:", err);
+});
+
+//Will only fire event first time even happens
+db.once("open", function(){
+  console.log("db connection succesful");
+  // All database communication goes here
+});
+
 app.use("/listofconcerts", routes);
 
 // 404 Not Found and forward to error handler
