@@ -4,7 +4,7 @@ var express = require("express");
 var router = express.Router();
 var Question = require("./models").Question;
 
-router.param("geoID", function(req, res, next, id) {
+router.param("qID", function(req, res, next, id) {
 //call back will be executed when geoId is present
     Question.findById(id, function(err, doc) {
       if(err) return next(err);
@@ -21,6 +21,15 @@ router.param("geoID", function(req, res, next, id) {
 
 });
 
+router.param("aID", function(req, res, next, id) {
+    req.answer = req.question.answers.id(id);
+    if(!req.answer) {
+      err = new Error("Not Found");
+      err.status = 404;
+      return next(err);
+    }
+    next();
+});
 // GET /listofconcerts ==> LIKE GET LIST OF CONCERTS
 //route for list of concerts in a given cit
 // router.get("/", function(req, res){
@@ -68,19 +77,19 @@ router.post("/", function (req, res, next) {
 //in the handler so it will be present on any matching route
 //we don't need to query database anymore becuase the param handler is going to 
 // be both querying the database or handle the errors
-router.get("/:geoID", function(req, res, next){
+router.get("/:qID", function(req, res, next){
     res.json(req.question);
 });  
 
 // POST /listofconcerts/city
-router.post("/:geoID", function (req, res) {
+router.post("/:qID", function (req, res) {
   res.json({
     response: "You sent me a POST request",
     body: req.body
   });
 });
 
-router.post("/:geoID/concerts", function(req, res, next) {
+router.post("/:qID/concerts", function(req, res, next) {
   req.question.concerts.push(req.body);
   req.qestions.save(function(err, question) {
       if(err) return next(err);
@@ -92,21 +101,58 @@ router.post("/:geoID/concerts", function(req, res, next) {
 
 // PUT /questions/:id/answers/:
 router.put("/:qID/concerts/:aID", function (req, res) {
-  res.json({
-    response: "You sent me a DELETE request to /concerts",
-    //questionID: req.params.qID
-    //AnswerID: req.params.qID
-    body: req.body
+    req.answer.update(req.body, function(err, result){
+        if(err) return next(err);
+        res.json(result);
+    });
+});    
+  // res.json({
+  //   response: "You sent me a DELETE request to /concerts",
+  //   //questionID: req.params.qID
+  //   //AnswerID: req.params.qID
+  //   body: req.body
+  
+
+// PUT /questions/:id/answers/:
+router.delete("/:qID/concerts/:aID", function (req, res) {
+  req.answer.remove(function(err){
+    req.question.save(function(err, question){
+      if(err) return next(err);
+      res.json(question);
+    });
   });
 });
 
-// PUT /questions/:id/answers/:
-router.delete("/:qID/listofconcerts/:aID", function (req, res) {
-  res.json({
-    response: "You sent me a DELETE request to /listofconserts",
-    body: req.body
-  });
+router.post("/:qID/concerts/:aID/vote-:dir", function(req, res, next){
+  if(req.params.dir.search(/^(up|down)$/) === -1) {
+    var err = new Error("Not Found");
+    err.status = 404;
+    next(err);
+  } else {
+    req.vote = req.params.dir;
+    next();
+  }
+},
+function(req, res, next){
+    req.answer.vote(req.vote, function(err, question) {
+        if (err) return next(err);
+        res.json(question);
+    });
 });
 
 
 module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
